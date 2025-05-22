@@ -339,6 +339,25 @@
             animation: fallCoin 4s linear infinite;
             box-shadow: inset 0 0 0 2px #f59e0b, inset 0 0 0 4px rgba(245, 158, 11, 0.3);
         }
+
+        @keyframes fallCoin {
+            0% {
+                top: -20px;
+                opacity: 0;
+                transform: translateY(0) rotate(0deg);
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                top: 100%;
+                opacity: 0;
+                transform: translateY(0) rotate(360deg);
+            }
+        }
     </style>
 </head>
 <body>
@@ -413,12 +432,28 @@
         let elapsedSeconds = 0;
         let salaryPerSecond = 0;
         let coinInterval;
+
+        // Cache DOM elements
+        const monthlySalaryInput = document.getElementById('monthlySalary');
+        const workDaysInput = document.getElementById('workDays');
+        const hoursPerDayInput = document.getElementById('hoursPerDay');
+        const salaryPerMinuteDisplay = document.getElementById('salaryPerMinute');
+        const milkTeaTimeDisplay = document.getElementById('milkTeaTime');
+        const resultDisplayDiv = document.getElementById('resultDisplay');
+        const realTimeDisplayDiv = document.getElementById('realTimeDisplay');
+        const timerControlsDiv = document.getElementById('timer');
+        const timerButton = document.getElementById('timerButton');
+        const currentSalaryDisplay = document.getElementById('currentSalary');
+        const coinContainerDiv = document.getElementById('coinContainer');
+
+        const playIconHTML = '<i class="fas fa-play"></i> 继续计时';
+        const pauseIconHTML = '<i class="fas fa-pause"></i> 暂停计时';
         
         function calculate() {
             // 获取输入值
-            const monthlySalary = parseFloat(document.getElementById('monthlySalary').value);
-            const workDays = parseInt(document.getElementById('workDays').value);
-            const hoursPerDay = parseFloat(document.getElementById('hoursPerDay').value);
+            const monthlySalary = parseFloat(monthlySalaryInput.value);
+            const workDays = parseInt(workDaysInput.value);
+            const hoursPerDay = parseFloat(hoursPerDayInput.value);
             
             // 验证输入
             if (isNaN(monthlySalary) || isNaN(workDays) || isNaN(hoursPerDay)) {
@@ -442,14 +477,14 @@
             const minutesForMilkTea = milkTeaPrice / salaryPerMinute;
             
             // 显示结果
-            document.getElementById('salaryPerMinute').textContent = salaryPerMinute.toFixed(2);
-            document.getElementById('milkTeaTime').textContent = Math.ceil(minutesForMilkTea);
-            document.getElementById('resultDisplay').style.display = 'block';
-            document.getElementById('realTimeDisplay').style.display = 'block';
-            document.getElementById('timer').style.display = 'flex';
+            salaryPerMinuteDisplay.textContent = salaryPerMinute.toFixed(2);
+            milkTeaTimeDisplay.textContent = Math.ceil(minutesForMilkTea);
+            resultDisplayDiv.style.display = 'block';
+            realTimeDisplayDiv.style.display = 'block';
+            timerControlsDiv.style.display = 'flex';
             
             // 添加脉冲动画
-            document.getElementById('realTimeDisplay').classList.add('pulse');
+            realTimeDisplayDiv.classList.add('pulse');
             
             // 重置并启动计时器
             resetTimer();
@@ -464,7 +499,7 @@
                 startTime = new Date().getTime() - (elapsedSeconds * 1000);
                 timerInterval = setInterval(updateTimer, 100); // 每0.1秒更新一次
                 isTimerRunning = true;
-                document.getElementById('timerButton').innerHTML = '<i class="fas fa-pause"></i> 暂停计时';
+                timerButton.innerHTML = pauseIconHTML;
             }
         }
         
@@ -472,7 +507,7 @@
             if (isTimerRunning) {
                 clearInterval(timerInterval);
                 isTimerRunning = false;
-                document.getElementById('timerButton').innerHTML = '<i class="fas fa-play"></i> 继续计时';
+                timerButton.innerHTML = playIconHTML;
             }
         }
         
@@ -484,19 +519,18 @@
                 clearInterval(coinInterval);
             }
             elapsedSeconds = 0;
-            document.getElementById('currentSalary').textContent = '0.00';
+            currentSalaryDisplay.textContent = '0.00';
             isTimerRunning = false;
             
             // 清除所有金币
-            const coinContainer = document.getElementById('coinContainer');
-            while (coinContainer.firstChild) {
-                coinContainer.removeChild(coinContainer.firstChild);
+            while (coinContainerDiv.firstChild) {
+                coinContainerDiv.removeChild(coinContainerDiv.firstChild);
             }
         }
         
         function resetTimerAndCalculate() {
             resetTimer();
-            document.getElementById('timerButton').innerHTML = '<i class="fas fa-pause"></i> 暂停计时';
+            timerButton.innerHTML = pauseIconHTML;
             startTimer();
             startCoinAnimation();
         }
@@ -513,16 +547,14 @@
             const currentTime = new Date().getTime();
             elapsedSeconds = (currentTime - startTime) / 1000;
             const earnedSalary = elapsedSeconds * salaryPerSecond;
-            document.getElementById('currentSalary').textContent = earnedSalary.toFixed(2);
+            currentSalaryDisplay.textContent = earnedSalary.toFixed(2);
         }
         
         function startCoinAnimation() {
-            const coinContainer = document.getElementById('coinContainer');
-            
             // 创建金币下落动画
             coinInterval = setInterval(() => {
                 if (isTimerRunning) {
-                    createCoin(coinContainer);
+                    createCoin(coinContainerDiv);
                 }
             }, 800);
         }
@@ -552,28 +584,6 @@
                 }
             }, (duration + delay) * 1000);
         }
-        
-        // 添加金币下落动画
-        document.styleSheets[0].insertRule(`
-            @keyframes fallCoin {
-                0% {
-                    top: -20px;
-                    opacity: 0;
-                    transform: translateY(0) rotate(0deg);
-                }
-                10% {
-                    opacity: 1;
-                }
-                90% {
-                    opacity: 1;
-                }
-                100% {
-                    top: 100%;
-                    opacity: 0;
-                    transform: translateY(0) rotate(360deg);
-                }
-            }
-        `, document.styleSheets[0].cssRules.length);
         
         // 为输入框添加焦点效果
         const inputs = document.querySelectorAll('input');
